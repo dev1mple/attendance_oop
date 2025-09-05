@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Attendance System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-user-graduate me-2"></i>Attendance System
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user me-1"></i>Student
+                </span>
+                <button class="btn btn-outline-light" onclick="logout()">
+                    <i class="fas fa-sign-out-alt me-1"></i>Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" onclick="showDashboard()">
+                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showAttendanceMarking()">
+                                <i class="fas fa-check-circle me-2"></i>Mark Attendance
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showAttendanceHistory()">
+                                <i class="fas fa-history me-2"></i>Attendance History
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showProfile()">
+                                <i class="fas fa-user me-2"></i>Profile
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <!-- Dashboard Section -->
+                <div id="dashboardSection" class="fade-in">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">Student Dashboard</h1>
+                    </div>
+
+                    <!-- Student Info Card -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-user me-2"></i>Student Information</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Name:</strong> <span id="studentName">Loading...</span></p>
+                                            <p><strong>Course:</strong> <span id="studentCourse">Loading...</span></p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Year Level:</strong> <span id="studentYear">Loading...</span></p>
+                                            <p><strong>Student ID:</strong> <span id="studentId">Loading...</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statistics Cards -->
+                    <div class="row mb-4">
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="stats-card">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Present Days</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="presentDays">0</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-check-circle stats-icon"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="stats-card">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Late Days</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="lateDays">0</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-clock stats-icon"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="stats-card">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Absent Days</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="absentDays">0</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-times-circle stats-icon"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="stats-card">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Attendance Rate</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="attendanceRate">0%</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-percentage stats-icon"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Today's Status -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-calendar-day me-2"></i>Today's Attendance Status</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="todayStatus">
+                                        <p class="text-muted">Loading today's status...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance Marking Section -->
+                <div id="attendanceMarkingSection" class="fade-in" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">Mark Attendance</h1>
+                    </div>
+
+                    <div class="attendance-form">
+                        <div class="row">
+                            <div class="col-md-8 mx-auto">
+                                <div class="text-center mb-4">
+                                    <i class="fas fa-calendar-check fa-3x text-primary mb-3"></i>
+                                    <h3>Mark Your Attendance</h3>
+                                    <p class="text-muted">Select your attendance status for today</p>
+                                </div>
+
+                                <form id="attendanceForm">
+                                    <div class="mb-4">
+                                        <label class="form-label">Today's Date</label>
+                                        <input type="date" class="form-control" id="attendanceDate" readonly>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label class="form-label">Attendance Status</label>
+                                        <div class="d-grid gap-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="attendanceStatus" id="statusPresent" value="present" checked>
+                                                <label class="form-check-label" for="statusPresent">
+                                                    <i class="fas fa-check-circle text-success me-2"></i>Present
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="attendanceStatus" id="statusAbsent" value="absent">
+                                                <label class="form-check-label" for="statusAbsent">
+                                                    <i class="fas fa-times-circle text-danger me-2"></i>Absent
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-4" id="lateSection" style="display: none;">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="isLate">
+                                            <label class="form-check-label" for="isLate">
+                                                <i class="fas fa-clock text-warning me-2"></i>I was late today
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label for="remarks" class="form-label">Remarks (Optional)</label>
+                                        <textarea class="form-control" id="remarks" rows="3" placeholder="Any additional comments..."></textarea>
+                                    </div>
+
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary btn-lg">
+                                            <i class="fas fa-save me-2"></i>Submit Attendance
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance History Section -->
+                <div id="attendanceHistorySection" class="fade-in" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">Attendance History</h1>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label for="historyMonthFilter" class="form-label">Month</label>
+                            <select class="form-select" id="historyMonthFilter">
+                                <option value="">All Months</option>
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="historyStatusFilter" class="form-label">Status</label>
+                            <select class="form-select" id="historyStatusFilter">
+                                <option value="">All Status</option>
+                                <option value="present">Present</option>
+                                <option value="absent">Absent</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="historyYearFilter" class="form-label">Year</label>
+                            <select class="form-select" id="historyYearFilter">
+                                <option value="">All Years</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="attendance-history">
+                        <div id="attendanceHistoryTable">
+                            <p class="text-muted">Loading attendance history...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Section -->
+                <div id="profileSection" class="fade-in" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">Student Profile</h1>
+                        <button class="btn btn-outline-primary" id="editProfileBtn" onclick="toggleProfileEdit()">
+                            <i class="fas fa-edit me-2"></i>Edit Profile
+                        </button>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8 mx-auto">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="fas fa-user-edit me-2"></i>Profile Information</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="profileForm">
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label for="profileFirstName" class="form-label">First Name *</label>
+                                                <input type="text" class="form-control" id="profileFirstName" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="profileLastName" class="form-label">Last Name *</label>
+                                                <input type="text" class="form-control" id="profileLastName" required>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label for="profileStudentNumber" class="form-label">Student Number *</label>
+                                                <input type="text" class="form-control" id="profileStudentNumber" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="profileEmail" class="form-label">Email *</label>
+                                                <input type="email" class="form-control" id="profileEmail" required>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label for="profileCourse" class="form-label">Course *</label>
+                                                <select class="form-select" id="profileCourse" required>
+                                                    <option value="">Select Course</option>
+                                                    <option value="BSCS">BSCS - Bachelor of Science in Computer Science</option>
+                                                    <option value="BSIT">BSIT - Bachelor of Science in Information Technology</option>
+                                                    <option value="BSCE">BSCE - Bachelor of Science in Computer Engineering</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="profileYearLevel" class="form-label">Year Level *</label>
+                                                <select class="form-select" id="profileYearLevel" required>
+                                                    <option value="">Select Year Level</option>
+                                                    <option value="1st Year">1st Year</option>
+                                                    <option value="2nd Year">2nd Year</option>
+                                                    <option value="3rd Year">3rd Year</option>
+                                                    <option value="4th Year">4th Year</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label for="profilePhone" class="form-label">Phone Number</label>
+                                                <input type="tel" class="form-control" id="profilePhone" placeholder="Enter your phone number">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label for="profileAddress" class="form-label">Address</label>
+                                                <input type="text" class="form-control" id="profileAddress" placeholder="Enter your address">
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="profileBio" class="form-label">Bio</label>
+                                            <textarea class="form-control" id="profileBio" rows="3" placeholder="Tell us about yourself..."></textarea>
+                                        </div>
+                                        <div class="d-flex gap-2" id="profileActions" style="display: none;">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-save me-2"></i>Save Changes
+                                            </button>
+                                            <button type="button" class="btn btn-secondary" onclick="cancelProfileEdit()">
+                                                <i class="fas fa-times me-2"></i>Cancel
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/student-dashboard.js"></script>
+</body>
+</html>
