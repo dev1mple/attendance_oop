@@ -52,6 +52,11 @@
                                 <i class="fas fa-users me-2"></i>Student Management
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showExcuseLetterManagement()">
+                                <i class="fas fa-file-alt me-2"></i>Excuse Letters
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </nav>
@@ -259,6 +264,60 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Excuse Letter Management Section -->
+                <div id="excuseLetterSection" class="fade-in" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">Excuse Letter Management</h1>
+                        <button class="btn btn-outline-primary" onclick="adminManager.refreshExcuseLetters()">
+                            <i class="fas fa-sync-alt me-2"></i>Refresh
+                        </button>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <label for="excuseCourseFilter" class="form-label">Course/Program</label>
+                            <select class="form-select" id="excuseCourseFilter">
+                                <option value="">All Courses</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="excuseStatusFilter" class="form-label">Status</label>
+                            <select class="form-select" id="excuseStatusFilter">
+                                <option value="">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="excuseYearFilter" class="form-label">Year Level</label>
+                            <select class="form-select" id="excuseYearFilter">
+                                <option value="">All Year Levels</option>
+                                <option value="1st Year">1st Year</option>
+                                <option value="2nd Year">2nd Year</option>
+                                <option value="3rd Year">3rd Year</option>
+                                <option value="4th Year">4th Year</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="excuseDateFilter" class="form-label">Date</label>
+                            <input type="date" class="form-control" id="excuseDateFilter">
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Excuse Letters</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="excuseLettersTable">
+                                <p class="text-muted">Loading excuse letters...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </main>
         </div>
     </div>
@@ -330,6 +389,34 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-primary" onclick="addStudent()">Add Student</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Excuse Letter Review Modal -->
+    <div class="modal fade" id="excuseReviewModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-file-alt me-2"></i>Review Excuse Letter
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="excuseReviewContent">
+                        <!-- Content will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger me-2" onclick="reviewExcuseLetter('rejected')">
+                        <i class="fas fa-times me-2"></i>Reject
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="reviewExcuseLetter('approved')">
+                        <i class="fas fa-check me-2"></i>Approve
+                    </button>
                 </div>
             </div>
         </div>

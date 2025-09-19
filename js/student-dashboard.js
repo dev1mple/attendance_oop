@@ -4,6 +4,7 @@ class StudentDashboardManager {
         this.currentSection = 'dashboard';
         this.studentData = null;
         this.attendanceRecords = [];
+        this.excuseLetters = [];
         this.init();
     }
 
@@ -11,6 +12,7 @@ class StudentDashboardManager {
         this.checkAuth();
         this.loadStudentData();
         this.loadAttendanceRecords();
+        this.loadExcuseLetters();
         this.bindEvents();
         this.updateDashboard();
         this.setCurrentDate();
@@ -55,6 +57,45 @@ class StudentDashboardManager {
                 { id: 3, studentId: this.studentData?.id, date: '2024-01-17', status: 'absent', isLate: false, course: this.studentData?.course, yearLevel: this.studentData?.yearLevel, remarks: 'Sick leave' }
             ];
             localStorage.setItem('attendanceRecords', JSON.stringify(this.attendanceRecords));
+        }
+    }
+
+    // Load excuse letters from localStorage
+    loadExcuseLetters() {
+        const storedExcuseLetters = localStorage.getItem('excuseLetters');
+        if (storedExcuseLetters) {
+            this.excuseLetters = JSON.parse(storedExcuseLetters);
+        } else {
+            // Create default excuse letters for the student
+            this.excuseLetters = [
+                { 
+                    id: 1, 
+                    studentId: this.studentData?.id, 
+                    subject: 'Medical Leave', 
+                    reason: 'Doctor appointment for regular checkup', 
+                    excuseDate: '2024-01-20', 
+                    status: 'approved', 
+                    course: this.studentData?.course, 
+                    yearLevel: this.studentData?.yearLevel,
+                    submittedAt: '2024-01-19T10:00:00Z',
+                    reviewedAt: '2024-01-19T14:30:00Z',
+                    adminRemarks: 'Approved - Valid medical reason'
+                },
+                { 
+                    id: 2, 
+                    studentId: this.studentData?.id, 
+                    subject: 'Family Emergency', 
+                    reason: 'Attending to family member in hospital', 
+                    excuseDate: '2024-01-25', 
+                    status: 'pending', 
+                    course: this.studentData?.course, 
+                    yearLevel: this.studentData?.yearLevel,
+                    submittedAt: '2024-01-24T15:30:00Z',
+                    reviewedAt: null,
+                    adminRemarks: null
+                }
+            ];
+            localStorage.setItem('excuseLetters', JSON.stringify(this.excuseLetters));
         }
     }
 
@@ -464,6 +505,177 @@ class StudentDashboardManager {
             }
         }, 5000);
     }
+
+    // Display excuse letters list
+    displayExcuseLetters() {
+        const excuseLettersList = document.getElementById('excuseLettersList');
+        if (!excuseLettersList) return;
+
+        // Filter excuse letters for current student
+        const studentExcuseLetters = this.excuseLetters.filter(letter => 
+            letter.studentId === this.studentData.id
+        );
+
+        if (studentExcuseLetters.length === 0) {
+            excuseLettersList.innerHTML = '<p class="text-muted">No excuse letters submitted yet.</p>';
+            return;
+        }
+
+        // Sort by submission date (newest first)
+        studentExcuseLetters.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+
+        let tableHTML = '<div class="table-responsive"><table class="table table-hover">';
+        tableHTML += '<thead><tr><th>Subject</th><th>Date of Absence</th><th>Status</th><th>Submitted</th><th>Actions</th></tr></thead><tbody>';
+        
+        studentExcuseLetters.forEach(letter => {
+            const statusBadge = this.getExcuseStatusBadge(letter.status);
+            const submittedDate = new Date(letter.submittedAt).toLocaleDateString();
+            
+            tableHTML += `
+                <tr>
+                    <td>${letter.subject}</td>
+                    <td>${letter.excuseDate}</td>
+                    <td>${statusBadge}</td>
+                    <td>${submittedDate}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewExcuseLetter(${letter.id})">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        tableHTML += '</tbody></table></div>';
+        excuseLettersList.innerHTML = tableHTML;
+    }
+
+    // Get excuse status badge HTML
+    getExcuseStatusBadge(status) {
+        switch (status) {
+            case 'approved':
+                return '<span class="badge bg-success">Approved</span>';
+            case 'rejected':
+                return '<span class="badge bg-danger">Rejected</span>';
+            case 'pending':
+                return '<span class="badge bg-warning">Pending</span>';
+            default:
+                return '<span class="badge bg-secondary">Unknown</span>';
+        }
+    }
+
+    // Submit new excuse letter
+    submitExcuseLetter() {
+        const subject = document.getElementById('excuseSubject').value.trim();
+        const excuseDate = document.getElementById('excuseDate').value;
+        const reason = document.getElementById('excuseReason').value.trim();
+        const course = document.getElementById('excuseCourse').value;
+        const yearLevel = document.getElementById('excuseYearLevel').value;
+
+        // Validation
+        if (!subject || !excuseDate || !reason || !course || !yearLevel) {
+            this.showAlert('Please fill in all required fields', 'danger');
+            return;
+        }
+
+        // Check if excuse letter already exists for the same date
+        const existingLetter = this.excuseLetters.find(letter => 
+            letter.studentId === this.studentData.id && 
+            letter.excuseDate === excuseDate
+        );
+
+        if (existingLetter) {
+            this.showAlert('An excuse letter for this date already exists!', 'warning');
+            return;
+        }
+
+        // Create new excuse letter
+        const newExcuseLetter = {
+            id: Date.now(),
+            studentId: this.studentData.id,
+            subject: subject,
+            reason: reason,
+            excuseDate: excuseDate,
+            status: 'pending',
+            course: course,
+            yearLevel: yearLevel,
+            submittedAt: new Date().toISOString(),
+            reviewedAt: null,
+            adminRemarks: null
+        };
+
+        // Add to excuse letters
+        this.excuseLetters.push(newExcuseLetter);
+        localStorage.setItem('excuseLetters', JSON.stringify(this.excuseLetters));
+
+        // Dispatch custom event for admin dashboard refresh
+        window.dispatchEvent(new CustomEvent('excuseLetterUpdated'));
+
+        // Update display
+        this.displayExcuseLetters();
+        
+        // Close modal and reset form
+        const modal = bootstrap.Modal.getInstance(document.getElementById('submitExcuseModal'));
+        modal.hide();
+        document.getElementById('excuseLetterForm').reset();
+        
+        this.showAlert('Excuse letter submitted successfully!', 'success');
+    }
+
+    // View excuse letter details
+    viewExcuseLetter(excuseId) {
+        const letter = this.excuseLetters.find(l => l.id === excuseId);
+        if (!letter) return;
+
+        const modal = new bootstrap.Modal(document.getElementById('excuseReviewModal'));
+        const content = document.getElementById('excuseReviewContent');
+        
+        content.innerHTML = `
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <strong>Subject:</strong> ${letter.subject}
+                </div>
+                <div class="col-md-6">
+                    <strong>Date of Absence:</strong> ${letter.excuseDate}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <strong>Course:</strong> ${letter.course}
+                </div>
+                <div class="col-md-6">
+                    <strong>Year Level:</strong> ${letter.yearLevel}
+                </div>
+            </div>
+            <div class="mb-3">
+                <strong>Reason:</strong>
+                <p class="mt-2 p-3 bg-light rounded">${letter.reason}</p>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <strong>Status:</strong> ${this.getExcuseStatusBadge(letter.status)}
+                </div>
+                <div class="col-md-6">
+                    <strong>Submitted:</strong> ${new Date(letter.submittedAt).toLocaleString()}
+                </div>
+            </div>
+            ${letter.reviewedAt ? `
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Reviewed:</strong> ${new Date(letter.reviewedAt).toLocaleString()}
+                    </div>
+                </div>
+            ` : ''}
+            ${letter.adminRemarks ? `
+                <div class="mb-3">
+                    <strong>Admin Remarks:</strong>
+                    <p class="mt-2 p-3 bg-light rounded">${letter.adminRemarks}</p>
+                </div>
+            ` : ''}
+        `;
+        
+        modal.show();
+    }
 }
 
 // Navigation functions
@@ -484,6 +696,12 @@ function showAttendanceHistory() {
     updateActiveNav('history');
     studentManager.populateYearFilter();
     studentManager.filterAttendanceHistory();
+}
+
+function showExcuseLetters() {
+    showSection('excuseLettersSection');
+    updateActiveNav('excuseLetters');
+    studentManager.displayExcuseLetters();
 }
 
 function showProfile() {
@@ -522,6 +740,15 @@ function toggleProfileEdit() {
 function cancelProfileEdit() {
     // Reload profile data and set fields back to read-only
     studentManager.updateProfileForm();
+}
+
+// Global functions for excuse letter management
+function submitExcuseLetter() {
+    studentManager.submitExcuseLetter();
+}
+
+function viewExcuseLetter(excuseId) {
+    studentManager.viewExcuseLetter(excuseId);
 }
 
 // Logout function

@@ -105,6 +105,28 @@ INSERT INTO students (user_id, student_number, first_name, last_name, course_id,
 (2, 'ST001', 'John', 'Doe', 1, 2, '2023-06-01');
 
 -- =====================================================
+-- EXCUSE_LETTERS TABLE (Excuse letter submissions)
+-- =====================================================
+CREATE TABLE excuse_letters (
+    excuse_id INT PRIMARY KEY AUTO_INCREMENT,
+    student_id INT NOT NULL,
+    course_id INT NOT NULL,
+    year_level_id INT NOT NULL,
+    subject VARCHAR(100) NOT NULL,
+    reason TEXT NOT NULL,
+    excuse_date DATE NOT NULL,
+    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+    admin_remarks TEXT,
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    reviewed_at TIMESTAMP NULL,
+    reviewed_by INT NULL,
+    FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
+    FOREIGN KEY (course_id) REFERENCES courses(course_id),
+    FOREIGN KEY (year_level_id) REFERENCES year_levels(year_level_id),
+    FOREIGN KEY (reviewed_by) REFERENCES users(user_id)
+);
+
+-- =====================================================
 -- CREATE INDEXES FOR PERFORMANCE
 -- =====================================================
 
@@ -113,6 +135,10 @@ CREATE INDEX idx_role ON users(role);
 CREATE INDEX idx_student_course_year ON students(course_id, year_level_id);
 CREATE INDEX idx_attendance_date ON attendance_records(attendance_date);
 CREATE INDEX idx_attendance_student_date ON attendance_records(student_id, attendance_date);
+CREATE INDEX idx_excuse_student ON excuse_letters(student_id);
+CREATE INDEX idx_excuse_course ON excuse_letters(course_id);
+CREATE INDEX idx_excuse_status ON excuse_letters(status);
+CREATE INDEX idx_excuse_date ON excuse_letters(excuse_date);
 
 -- =====================================================
 -- END OF SCHEMA

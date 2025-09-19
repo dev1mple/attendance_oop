@@ -48,6 +48,11 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showExcuseLetters()">
+                                <i class="fas fa-file-alt me-2"></i>Excuse Letters
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" href="#" onclick="showProfile()">
                                 <i class="fas fa-user me-2"></i>Profile
                             </a>
@@ -276,6 +281,28 @@
                     </div>
                 </div>
 
+                <!-- Excuse Letters Section -->
+                <div id="excuseLettersSection" class="fade-in" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">Excuse Letters</h1>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#submitExcuseModal">
+                            <i class="fas fa-plus me-2"></i>Submit Excuse Letter
+                        </button>
+                    </div>
+
+                    <!-- Excuse Letters List -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-list me-2"></i>My Excuse Letters</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="excuseLettersList">
+                                <p class="text-muted">Loading excuse letters...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Profile Section -->
                 <div id="profileSection" class="fade-in" style="display: none;">
                     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
@@ -363,6 +390,68 @@
                     </div>
                 </div>
             </main>
+        </div>
+    </div>
+
+    <!-- Submit Excuse Letter Modal -->
+    <div class="modal fade" id="submitExcuseModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-file-alt me-2"></i>Submit Excuse Letter
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="excuseLetterForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="excuseSubject" class="form-label">Subject *</label>
+                                <input type="text" class="form-control" id="excuseSubject" name="subject" required 
+                                       placeholder="e.g., Medical Leave, Family Emergency">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="excuseDate" class="form-label">Date of Absence *</label>
+                                <input type="date" class="form-control" id="excuseDate" name="excuseDate" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="excuseReason" class="form-label">Reason for Absence *</label>
+                            <textarea class="form-control" id="excuseReason" name="reason" rows="4" required 
+                                      placeholder="Please provide a detailed explanation for your absence..."></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="excuseCourse" class="form-label">Course/Program *</label>
+                            <select class="form-select" id="excuseCourse" name="course" required>
+                                <option value="">Select Course</option>
+                                <option value="BSCS">BSCS - Bachelor of Science in Computer Science</option>
+                                <option value="BSIT">BSIT - Bachelor of Science in Information Technology</option>
+                                <option value="BSCE">BSCE - Bachelor of Science in Computer Engineering</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="excuseYearLevel" class="form-label">Year Level *</label>
+                            <select class="form-select" id="excuseYearLevel" name="yearLevel" required>
+                                <option value="">Select Year Level</option>
+                                <option value="1st Year">1st Year</option>
+                                <option value="2nd Year">2nd Year</option>
+                                <option value="3rd Year">3rd Year</option>
+                                <option value="4th Year">4th Year</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="submitExcuseLetter()">
+                        <i class="fas fa-paper-plane me-2"></i>Submit Excuse Letter
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 

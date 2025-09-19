@@ -5,6 +5,7 @@ class AdminDashboardManager {
         this.courses = [];
         this.students = [];
         this.attendanceRecords = [];
+        this.excuseLetters = [];
         this.init();
     }
 
@@ -28,6 +29,7 @@ class AdminDashboardManager {
         this.loadCourses();
         this.loadStudents();
         this.loadAttendanceRecords();
+        this.loadExcuseLetters();
         this.populateFilters();
     }
 
@@ -61,6 +63,18 @@ class AdminDashboardManager {
             this.updateDashboardStats();
             this.filterAttendance();
         });
+
+        // Listen for excuse letter updates
+        window.addEventListener('excuseLetterUpdated', () => {
+            this.loadExcuseLetters();
+            this.filterExcuseLetters();
+        });
+
+        // Excuse letter filter events
+        document.getElementById('excuseCourseFilter')?.addEventListener('change', () => this.filterExcuseLetters());
+        document.getElementById('excuseStatusFilter')?.addEventListener('change', () => this.filterExcuseLetters());
+        document.getElementById('excuseYearFilter')?.addEventListener('change', () => this.filterExcuseLetters());
+        document.getElementById('excuseDateFilter')?.addEventListener('change', () => this.filterExcuseLetters());
     }
 
     // Load courses from localStorage or create default ones
@@ -125,10 +139,63 @@ class AdminDashboardManager {
         }
     }
 
+    // Load excuse letters from localStorage
+    loadExcuseLetters() {
+        const storedExcuseLetters = localStorage.getItem('excuseLetters');
+        if (storedExcuseLetters) {
+            this.excuseLetters = JSON.parse(storedExcuseLetters);
+        } else {
+            // Create default excuse letters
+            this.excuseLetters = [
+                { 
+                    id: 1, 
+                    studentId: 'ST001', 
+                    subject: 'Medical Leave', 
+                    reason: 'Doctor appointment for regular checkup', 
+                    excuseDate: '2024-01-20', 
+                    status: 'approved', 
+                    course: 'BSCS', 
+                    yearLevel: '2nd Year',
+                    submittedAt: '2024-01-19T10:00:00Z',
+                    reviewedAt: '2024-01-19T14:30:00Z',
+                    adminRemarks: 'Approved - Valid medical reason'
+                },
+                { 
+                    id: 2, 
+                    studentId: 'ST002', 
+                    subject: 'Family Emergency', 
+                    reason: 'Attending to family member in hospital', 
+                    excuseDate: '2024-01-25', 
+                    status: 'pending', 
+                    course: 'BSIT', 
+                    yearLevel: '3rd Year',
+                    submittedAt: '2024-01-24T15:30:00Z',
+                    reviewedAt: null,
+                    adminRemarks: null
+                },
+                { 
+                    id: 3, 
+                    studentId: 'ST003', 
+                    subject: 'Personal Matter', 
+                    reason: 'Attending important family event', 
+                    excuseDate: '2024-01-30', 
+                    status: 'rejected', 
+                    course: 'BSCE', 
+                    yearLevel: '1st Year',
+                    submittedAt: '2024-01-29T09:00:00Z',
+                    reviewedAt: '2024-01-29T16:00:00Z',
+                    adminRemarks: 'Rejected - Not a valid reason for absence'
+                }
+            ];
+            localStorage.setItem('excuseLetters', JSON.stringify(this.excuseLetters));
+        }
+    }
+
     // Populate filter dropdowns
     populateFilters() {
         const courseFilter = document.getElementById('courseFilter');
         const studentCourseSelect = document.getElementById('studentCourse');
+        const excuseCourseFilter = document.getElementById('excuseCourseFilter');
         
         if (courseFilter) {
             courseFilter.innerHTML = '<option value="">All Courses</option>';
@@ -155,6 +222,13 @@ class AdminDashboardManager {
                 }
             });
             
+            // Add courses from excuse letters
+            this.excuseLetters.forEach(letter => {
+                if (letter.course) {
+                    allCourses.add(letter.course);
+                }
+            });
+            
             // Convert to array and sort
             const sortedCourses = Array.from(allCourses).sort();
             
@@ -168,6 +242,26 @@ class AdminDashboardManager {
             studentCourseSelect.innerHTML = '<option value="">Select Course</option>';
             this.courses.forEach(course => {
                 studentCourseSelect.innerHTML += `<option value="${course.name}">${course.name}</option>`;
+            });
+        }
+
+        if (excuseCourseFilter) {
+            excuseCourseFilter.innerHTML = '<option value="">All Courses</option>';
+            
+            // Get unique courses from excuse letters
+            const excuseCourses = new Set();
+            this.excuseLetters.forEach(letter => {
+                if (letter.course) {
+                    excuseCourses.add(letter.course);
+                }
+            });
+            
+            // Convert to array and sort
+            const sortedExcuseCourses = Array.from(excuseCourses).sort();
+            
+            // Populate dropdown
+            sortedExcuseCourses.forEach(courseName => {
+                excuseCourseFilter.innerHTML += `<option value="${courseName}">${courseName}</option>`;
             });
         }
     }
@@ -593,6 +687,209 @@ class AdminDashboardManager {
             }
         }, 5000);
     }
+
+    // Filter excuse letters
+    filterExcuseLetters() {
+        const courseFilter = document.getElementById('excuseCourseFilter')?.value;
+        const statusFilter = document.getElementById('excuseStatusFilter')?.value;
+        const yearFilter = document.getElementById('excuseYearFilter')?.value;
+        const dateFilter = document.getElementById('excuseDateFilter')?.value;
+
+        let filteredLetters = this.excuseLetters;
+
+        if (courseFilter) {
+            filteredLetters = filteredLetters.filter(letter => letter.course === courseFilter);
+        }
+        
+        if (statusFilter) {
+            filteredLetters = filteredLetters.filter(letter => letter.status === statusFilter);
+        }
+        
+        if (yearFilter) {
+            filteredLetters = filteredLetters.filter(letter => letter.yearLevel === yearFilter);
+        }
+        
+        if (dateFilter) {
+            filteredLetters = filteredLetters.filter(letter => letter.excuseDate === dateFilter);
+        }
+
+        this.displayExcuseLettersTable(filteredLetters);
+    }
+
+    // Display excuse letters table
+    displayExcuseLettersTable(letters) {
+        const excuseLettersTable = document.getElementById('excuseLettersTable');
+        if (!excuseLettersTable) return;
+
+        if (letters.length === 0) {
+            excuseLettersTable.innerHTML = '<p class="text-muted">No excuse letters found for the selected filters.</p>';
+            return;
+        }
+
+        // Sort by submission date (newest first)
+        letters.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+
+        let tableHTML = '<div class="table-responsive"><table class="table table-hover">';
+        tableHTML += '<thead><tr><th>Student</th><th>Subject</th><th>Course</th><th>Year Level</th><th>Date of Absence</th><th>Status</th><th>Submitted</th><th>Actions</th></tr></thead><tbody>';
+        
+        letters.forEach(letter => {
+            const student = this.students.find(s => s.id === letter.studentId);
+            const studentName = student ? student.name : 'Unknown Student';
+            const statusBadge = this.getExcuseStatusBadge(letter.status);
+            const submittedDate = new Date(letter.submittedAt).toLocaleDateString();
+            
+            tableHTML += `
+                <tr>
+                    <td>${studentName}</td>
+                    <td>${letter.subject}</td>
+                    <td>${letter.course}</td>
+                    <td>${letter.yearLevel}</td>
+                    <td>${letter.excuseDate}</td>
+                    <td>${statusBadge}</td>
+                    <td>${submittedDate}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-2" onclick="reviewExcuseLetterModal(${letter.id})">
+                            <i class="fas fa-eye"></i> Review
+                        </button>
+                        ${letter.status === 'pending' ? `
+                            <button class="btn btn-sm btn-success me-1" onclick="reviewExcuseLetter(${letter.id}, 'approved')">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="reviewExcuseLetter(${letter.id}, 'rejected')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        ` : ''}
+                    </td>
+                </tr>
+            `;
+        });
+        
+        tableHTML += '</tbody></table></div>';
+        excuseLettersTable.innerHTML = tableHTML;
+    }
+
+    // Get excuse status badge HTML
+    getExcuseStatusBadge(status) {
+        switch (status) {
+            case 'approved':
+                return '<span class="badge bg-success">Approved</span>';
+            case 'rejected':
+                return '<span class="badge bg-danger">Rejected</span>';
+            case 'pending':
+                return '<span class="badge bg-warning">Pending</span>';
+            default:
+                return '<span class="badge bg-secondary">Unknown</span>';
+        }
+    }
+
+    // Review excuse letter modal
+    reviewExcuseLetterModal(excuseId) {
+        const letter = this.excuseLetters.find(l => l.id === excuseId);
+        if (!letter) return;
+
+        const student = this.students.find(s => s.id === letter.studentId);
+        const studentName = student ? student.name : 'Unknown Student';
+
+        const modal = new bootstrap.Modal(document.getElementById('excuseReviewModal'));
+        const content = document.getElementById('excuseReviewContent');
+        
+        content.innerHTML = `
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <strong>Student:</strong> ${studentName}
+                </div>
+                <div class="col-md-6">
+                    <strong>Student ID:</strong> ${letter.studentId}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <strong>Subject:</strong> ${letter.subject}
+                </div>
+                <div class="col-md-6">
+                    <strong>Date of Absence:</strong> ${letter.excuseDate}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <strong>Course:</strong> ${letter.course}
+                </div>
+                <div class="col-md-6">
+                    <strong>Year Level:</strong> ${letter.yearLevel}
+                </div>
+            </div>
+            <div class="mb-3">
+                <strong>Reason:</strong>
+                <p class="mt-2 p-3 bg-light rounded">${letter.reason}</p>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <strong>Status:</strong> ${this.getExcuseStatusBadge(letter.status)}
+                </div>
+                <div class="col-md-6">
+                    <strong>Submitted:</strong> ${new Date(letter.submittedAt).toLocaleString()}
+                </div>
+            </div>
+            ${letter.reviewedAt ? `
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Reviewed:</strong> ${new Date(letter.reviewedAt).toLocaleString()}
+                    </div>
+                </div>
+            ` : ''}
+            ${letter.adminRemarks ? `
+                <div class="mb-3">
+                    <strong>Admin Remarks:</strong>
+                    <p class="mt-2 p-3 bg-light rounded">${letter.adminRemarks}</p>
+                </div>
+            ` : ''}
+            <div class="mb-3">
+                <label for="adminRemarksInput" class="form-label">Admin Remarks (Optional)</label>
+                <textarea class="form-control" id="adminRemarksInput" rows="3" placeholder="Enter your remarks about this excuse letter...">${letter.adminRemarks || ''}</textarea>
+            </div>
+        `;
+        
+        // Store current excuse ID for review action
+        window.currentExcuseId = excuseId;
+        modal.show();
+    }
+
+    // Review excuse letter (approve/reject)
+    reviewExcuseLetter(excuseId, status) {
+        const letter = this.excuseLetters.find(l => l.id === excuseId);
+        if (!letter) return;
+
+        const adminRemarks = document.getElementById('adminRemarksInput')?.value.trim() || '';
+
+        // Update excuse letter
+        letter.status = status;
+        letter.reviewedAt = new Date().toISOString();
+        letter.adminRemarks = adminRemarks;
+
+        // Save to localStorage
+        localStorage.setItem('excuseLetters', JSON.stringify(this.excuseLetters));
+
+        // Update display
+        this.filterExcuseLetters();
+
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('excuseReviewModal'));
+        modal.hide();
+
+        // Show success message
+        const statusText = status === 'approved' ? 'approved' : 'rejected';
+        this.showAlert(`Excuse letter ${statusText} successfully!`, 'success');
+
+        // Dispatch custom event for student dashboard refresh
+        window.dispatchEvent(new CustomEvent('excuseLetterUpdated'));
+    }
+
+    // Refresh excuse letters
+    refreshExcuseLetters() {
+        this.loadExcuseLetters();
+        this.populateFilters();
+        this.filterExcuseLetters();
+    }
 }
 
 // Navigation functions
@@ -616,6 +913,12 @@ function showAttendanceMonitoring() {
 function showStudentManagement() {
     showSection('studentSection');
     updateActiveNav('student');
+}
+
+function showExcuseLetterManagement() {
+    showSection('excuseLetterSection');
+    updateActiveNav('excuseLetter');
+    adminManager.filterExcuseLetters();
 }
 
 // Helper function to show sections
@@ -671,6 +974,15 @@ function deleteStudent(studentId) {
         adminManager.updateDashboardStats();
         adminManager.showAlert('Student deleted successfully!', 'success');
     }
+}
+
+// Global functions for excuse letter management
+function reviewExcuseLetterModal(excuseId) {
+    adminManager.reviewExcuseLetterModal(excuseId);
+}
+
+function reviewExcuseLetter(excuseId, status) {
+    adminManager.reviewExcuseLetter(excuseId, status);
 }
 
 // Logout function
